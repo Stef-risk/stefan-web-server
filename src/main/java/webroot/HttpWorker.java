@@ -113,7 +113,13 @@ public class HttpWorker implements Runnable {
                 displayDefaultPage(false);
             }
             //显示特定的页面
-            File requestedFile = new File(DefaultFilePathEnums.FILE_PATH_PREFIX.getFilePath() + fileName);
+            File requestedFile;
+            //处理文件名后缀
+            if (fileName.endsWith(DefaultFilePathEnums.FILE_PATH_SUFFIX.getFilePath())) {
+                requestedFile = new File(DefaultFilePathEnums.FILE_PATH_PREFIX.getFilePath() + fileName);
+            } else {
+                requestedFile = new File(DefaultFilePathEnums.FILE_PATH_PREFIX.getFilePath() + fileName + DefaultFilePathEnums.FILE_PATH_SUFFIX.getFilePath());
+            }
             //如果文件存在则显示，否则显示默认页面
             if (requestedFile.exists()) {
                 displaySpecificPage(requestedFile, false);
@@ -171,7 +177,7 @@ public class HttpWorker implements Runnable {
     private void displayDefaultPage(boolean forHead) throws IOException {
         File file = new File(DefaultFilePathEnums.DEFAULT_FILE.getFilePath());
         // 先设置HTTP头部
-        out.println("HTTP/1.0 "+StatusCodeEnum.OK);
+        out.println("HTTP/1.0 " + StatusCodeEnum.OK);
         out.println("Server: Stefan HTTP Server : 1.0");
         out.println("Date: " + new Date());
         out.println("Content-type: " + getContentType(file).getMediaType());
@@ -195,7 +201,7 @@ public class HttpWorker implements Runnable {
     private void display404Page(boolean forHead) throws IOException {
         File file = new File(DefaultFilePathEnums.FILE_NOT_FOUND_PAGE.getFilePath());
         // 先设置HTTP头部
-        out.println("HTTP/1.0 "+ StatusCodeEnum.NOT_FOUND_404);
+        out.println("HTTP/1.0 " + StatusCodeEnum.NOT_FOUND_404);
         out.println("Server: Stefan HTTP Server : 1.0");
         out.println("Date: " + new Date());
         out.println("Content-type: " + getContentType(file).getMediaType());
@@ -220,7 +226,7 @@ public class HttpWorker implements Runnable {
      */
     private void displaySpecificPage(File file, boolean forHead) throws IOException {
         // 先设置HTTP头部
-        out.println("HTTP/1.0 "+StatusCodeEnum.OK);
+        out.println("HTTP/1.0 " + StatusCodeEnum.OK);
         out.println("Server: Stefan HTTP Server : 1.0");
         out.println("Date: " + new Date());
         out.println("Content-type: " + getContentType(file).getMediaType());
@@ -242,7 +248,7 @@ public class HttpWorker implements Runnable {
     private void handleBadRequest() {
         File file = new File(DefaultFilePathEnums.BAD_REQUEST_PAGE.getFilePath());
         // 先设置HTTP头部
-        out.println("HTTP/1.0"+StatusCodeEnum.BAD_REQUEST);
+        out.println("HTTP/1.0" + StatusCodeEnum.BAD_REQUEST);
         out.println("Server: Stefan HTTP Server : 1.0");
         out.println("Date: " + new Date());
         out.println("Content-type: " + getContentType(file).getMediaType());
@@ -258,7 +264,7 @@ public class HttpWorker implements Runnable {
     private void handleForbidden() {
         File file = new File(DefaultFilePathEnums.FORBIDDEN_PAGE.getFilePath());
         // 先设置HTTP头部
-        out.println("HTTP/1.0"+StatusCodeEnum.FORBIDDEN);
+        out.println("HTTP/1.0" + StatusCodeEnum.FORBIDDEN);
         out.println("Server: Stefan HTTP Server : 1.0");
         out.println("Date: " + new Date());
         out.println("Content-type: " + getContentType(file).getMediaType());
@@ -304,8 +310,4 @@ public class HttpWorker implements Runnable {
         return bFile;
     }
 
-    //对于一个请求，先获取其请求类型：GET POST HEAD
-    //对于不同请求类型分别处理
-    //处理流程：
-    //  GET：  去寻找资源的位置，找到返回资源，未找到返回默认页面以及对应的状态码
 }

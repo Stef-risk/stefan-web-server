@@ -8,9 +8,20 @@ package webroot.enums;
  */
 public enum HttpMethodEnum {
 
-    GET("GET","GET请求"),
-    HEAD("HEAD","HEAD请求"),
-    POST("POST","POST请求");
+    /**
+     * GET请求
+     */
+    GET("GET","GET request"),
+
+    /**
+     * HEAD请求
+     */
+    HEAD("HEAD","HEAD request"),
+
+    /**
+     * POST请求
+     */
+    POST("POST","POST request");
 
     /**
      * 请求名称

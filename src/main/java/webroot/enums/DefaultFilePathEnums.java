@@ -31,7 +31,13 @@ public enum DefaultFilePathEnums {
     /**
      * 文件名前缀
      */
-    FILE_PATH_PREFIX("prefix of the file name","C:\\Users\\Stefrisk\\Desktop\\Git Repositories\\stefan-web-server\\src\\main\\resources\\webroot\\");
+    FILE_PATH_PREFIX("prefix of the file name","C:\\Users\\Stefrisk\\Desktop\\Git Repositories\\stefan-web-server\\src\\main\\resources\\webroot\\"),
+
+    /**
+     * 文件名后缀
+     */
+    FILE_PATH_SUFFIX("suffix of the file name",".html"),
+    ;
 
     /**
      * 文件类型
