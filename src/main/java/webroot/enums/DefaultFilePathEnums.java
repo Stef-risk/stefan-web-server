@@ -16,7 +16,17 @@ public enum DefaultFilePathEnums {
     /**
      * 未找到相应文件时展示的页面
      */
-    FILE_NOT_FOUND("404 Page","C:\\Users\\Stefrisk\\Desktop\\Git Repositories\\stefan-web-server\\src\\main\\resources\\webroot\\404.html"),
+    FILE_NOT_FOUND_PAGE("404 Page","C:\\Users\\Stefrisk\\Desktop\\Git Repositories\\stefan-web-server\\src\\main\\resources\\webroot\\404.html"),
+
+    /**
+     * 400错误请求页面
+     */
+    BAD_REQUEST_PAGE("400 Page","C:\\Users\\Stefrisk\\Desktop\\Git Repositories\\stefan-web-server\\src\\main\\resources\\webroot\\400.html"),
+
+    /**
+     * 403禁止执行页面
+     */
+    FORBIDDEN_PAGE("403 Page",""),
 
     /**
      * 文件名前缀

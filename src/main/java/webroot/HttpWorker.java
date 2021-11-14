@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import webroot.enums.ContentTypeEnum;
 import webroot.enums.DefaultFilePathEnums;
 import webroot.enums.HttpMethodEnum;
+import webroot.enums.StatusCodeEnum;
 
 import java.io.*;
 import java.net.Socket;
@@ -26,7 +27,7 @@ public class HttpWorker implements Runnable {
     private Socket socket;
 
     /**
-     * 输出流
+     * 输出流a
      */
     private PrintWriter out;
 
@@ -71,6 +72,8 @@ public class HttpWorker implements Runnable {
                 processGetMethod(parsedUrl);
             } else if (method.toUpperCase(Locale.ROOT).equals(HttpMethodEnum.HEAD.getMethodName())) {
                 processHeadMethod(parsedUrl);
+            } else if (method.toUpperCase(Locale.ROOT).equals(HttpMethodEnum.POST.getMethodName())) {
+                processPostMethod(parsedUrl);
             }
 
         } catch (IOException e) {
@@ -118,8 +121,9 @@ public class HttpWorker implements Runnable {
                 display404Page(false);
             }
         } catch (Exception e) {
-            //返回未找到页面
+            //请求错误
             e.printStackTrace();
+            handleBadRequest();
         }
     }
 
@@ -145,17 +149,29 @@ public class HttpWorker implements Runnable {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            handleBadRequest();
         }
     }
 
     /**
+     * 处理POST请求
+     *
+     * @param parsedUrl
+     */
+    private void processPostMethod(String[] parsedUrl) throws IOException {
+        Runtime.getRuntime().exec("C:\\Strawberry\\perl\\bin\\perl.exe C:\\Users\\Stefrisk\\Desktop\\Git Repositories\\stefan-web-server\\src\\main\\resources\\webroot\\cgi-bin\\calculator.pl");
+        System.out.println("After executing");
+    }
+
+    /**
      * 返回默认的页面
+     *
      * @param forHead 表明是否为HEAD请求
      */
     private void displayDefaultPage(boolean forHead) throws IOException {
         File file = new File(DefaultFilePathEnums.DEFAULT_FILE.getFilePath());
         // 先设置HTTP头部
-        out.println("HTTP/1.0 200 OK");
+        out.println("HTTP/1.0 "+StatusCodeEnum.OK);
         out.println("Server: Stefan HTTP Server : 1.0");
         out.println("Date: " + new Date());
         out.println("Content-type: " + getContentType(file).getMediaType());
@@ -165,7 +181,7 @@ public class HttpWorker implements Runnable {
         out.flush();
 
         //如果为get请求将主体内容写入
-        if(!forHead) {
+        if (!forHead) {
             outputStream.write(readBytesFromFile(file));
             outputStream.flush();
         }
@@ -173,12 +189,13 @@ public class HttpWorker implements Runnable {
 
     /**
      * 返回404页面
+     *
      * @param forHead
      */
     private void display404Page(boolean forHead) throws IOException {
-        File file = new File(DefaultFilePathEnums.FILE_NOT_FOUND.getFilePath());
+        File file = new File(DefaultFilePathEnums.FILE_NOT_FOUND_PAGE.getFilePath());
         // 先设置HTTP头部
-        out.println("HTTP/1.0 404 File Not Found");
+        out.println("HTTP/1.0 "+ StatusCodeEnum.NOT_FOUND_404);
         out.println("Server: Stefan HTTP Server : 1.0");
         out.println("Date: " + new Date());
         out.println("Content-type: " + getContentType(file).getMediaType());
@@ -188,11 +205,10 @@ public class HttpWorker implements Runnable {
         out.flush();
 
         //将主体内容写入
-        if(!forHead) {
+        if (!forHead) {
             outputStream.write(readBytesFromFile(file));
             outputStream.flush();
         }
-
 
     }
 
@@ -202,9 +218,9 @@ public class HttpWorker implements Runnable {
      * @param file
      * @param forHead
      */
-    private void displaySpecificPage(File file,boolean forHead) throws IOException {
+    private void displaySpecificPage(File file, boolean forHead) throws IOException {
         // 先设置HTTP头部
-        out.println("HTTP/1.0 200 OK");
+        out.println("HTTP/1.0 "+StatusCodeEnum.OK);
         out.println("Server: Stefan HTTP Server : 1.0");
         out.println("Date: " + new Date());
         out.println("Content-type: " + getContentType(file).getMediaType());
@@ -214,12 +230,43 @@ public class HttpWorker implements Runnable {
         out.flush();
 
         //将主体内容写入
-        if(!forHead) {
+        if (!forHead) {
             outputStream.write(readBytesFromFile(file));
             outputStream.flush();
         }
     }
 
+    /**
+     * 处理错误请求
+     */
+    private void handleBadRequest() {
+        File file = new File(DefaultFilePathEnums.BAD_REQUEST_PAGE.getFilePath());
+        // 先设置HTTP头部
+        out.println("HTTP/1.0"+StatusCodeEnum.BAD_REQUEST);
+        out.println("Server: Stefan HTTP Server : 1.0");
+        out.println("Date: " + new Date());
+        out.println("Content-type: " + getContentType(file).getMediaType());
+        out.println("Content-length: " + file.length());
+        //在头部与主体内容之间流出空行
+        out.println();
+        out.flush();
+    }
+
+    /**
+     * 处理禁止执行页面
+     */
+    private void handleForbidden() {
+        File file = new File(DefaultFilePathEnums.FORBIDDEN_PAGE.getFilePath());
+        // 先设置HTTP头部
+        out.println("HTTP/1.0"+StatusCodeEnum.FORBIDDEN);
+        out.println("Server: Stefan HTTP Server : 1.0");
+        out.println("Date: " + new Date());
+        out.println("Content-type: " + getContentType(file).getMediaType());
+        out.println("Content-length: " + file.length());
+        //在头部与主体内容之间流出空行
+        out.println();
+        out.flush();
+    }
 
     /**
      * 获取文件类型
