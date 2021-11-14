@@ -1,12 +1,15 @@
 package webroot;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import webroot.enums.ContentTypeEnum;
 import webroot.enums.DefaultFilePathEnums;
 import webroot.enums.HttpMethodEnum;
 import webroot.enums.StatusCodeEnum;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Date;
@@ -20,6 +23,11 @@ import java.util.Locale;
  * @since 2021.11.12
  */
 public class HttpWorker implements Runnable {
+
+    /**
+     * 记录日志
+     */
+    private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     /**
      * 客户端socket
@@ -41,7 +49,6 @@ public class HttpWorker implements Runnable {
      */
     private OutputStream outputStream;
 
-
     public HttpWorker(Socket clientSocket) {
         this.socket = clientSocket;
     }
@@ -54,6 +61,7 @@ public class HttpWorker implements Runnable {
         if (socket == null) {
             return;
         }
+
         try {
             //获取socket的输入和输出流
             out = new PrintWriter(socket.getOutputStream());
@@ -62,8 +70,6 @@ public class HttpWorker implements Runnable {
 
             //读取请求url
             String requests = in.readLine();
-            System.out.println("Requests:" + requests + "\nfrom thread:" + Thread.currentThread().getName());
-            System.out.println(Arrays.toString(parseUrl(requests)));
             String[] parsedUrl = parseUrl(requests);
             //根据解析的url来获取方法
             String method = parsedUrl[0];
@@ -106,6 +112,7 @@ public class HttpWorker implements Runnable {
      */
     private void processGetMethod(String[] parsedUrl) {
         //先获取文件名称
+        File requestedFile = null;
         try {
             String fileName = parsedUrl[1].trim().substring(1);
             //文件名称为空则直接返回默认页面
@@ -113,24 +120,22 @@ public class HttpWorker implements Runnable {
                 displayDefaultPage(false);
             }
             //显示特定的页面
-            File requestedFile;
             //处理文件名后缀
             if (fileName.contains(".")) {
                 requestedFile = new File(DefaultFilePathEnums.FILE_PATH_PREFIX.getFilePath() + fileName);
             } else {
                 requestedFile = new File(DefaultFilePathEnums.FILE_PATH_PREFIX.getFilePath() + fileName + DefaultFilePathEnums.FILE_PATH_SUFFIX.getFilePath());
             }
-            System.out.println("FileName !!!!!!:"+requestedFile.getName());
             //如果文件存在则显示，否则显示默认页面
             if (requestedFile.exists()) {
                 displaySpecificPage(requestedFile, false);
             } else {
-                display404Page(false);
+                display404Page(false, requestedFile);
             }
         } catch (Exception e) {
             //请求错误
             e.printStackTrace();
-            handleBadRequest();
+            handleBadRequest(requestedFile);
         }
     }
 
@@ -141,27 +146,27 @@ public class HttpWorker implements Runnable {
      */
     private void processHeadMethod(String[] parsedUrl) {
         //获取文件名称
+        File requestedFile = null;
         try {
             String fileName = parsedUrl[1].trim().substring(1);
             if (StringUtils.isBlank(fileName)) {
                 displayDefaultPage(true);
             }
-            File requestedFile;
+
             if (fileName.endsWith(".*")) {
                 requestedFile = new File(DefaultFilePathEnums.FILE_PATH_PREFIX.getFilePath() + fileName);
             } else {
                 requestedFile = new File(DefaultFilePathEnums.FILE_PATH_PREFIX.getFilePath() + fileName + DefaultFilePathEnums.FILE_PATH_SUFFIX.getFilePath());
             }
-            System.out.println("FileName !!!!!!:"+fileName);
             //如果文件存在则显示，否则显示默认页面
             if (requestedFile.exists()) {
                 displaySpecificPage(requestedFile, true);
             } else {
-                display404Page(true);
+                display404Page(true,requestedFile);
             }
         } catch (IOException e) {
             e.printStackTrace();
-            handleBadRequest();
+            handleBadRequest(requestedFile);
         }
     }
 
@@ -197,14 +202,17 @@ public class HttpWorker implements Runnable {
             outputStream.write(readBytesFromFile(file));
             outputStream.flush();
         }
+
+        doLogging(HttpMethodEnum.GET,file,StatusCodeEnum.OK);
     }
 
     /**
      * 返回404页面
      *
      * @param forHead
+     * @param requestedFile
      */
-    private void display404Page(boolean forHead) throws IOException {
+    private void display404Page(boolean forHead, File requestedFile) throws IOException {
         File file = new File(DefaultFilePathEnums.FILE_NOT_FOUND_PAGE.getFilePath());
         // 先设置HTTP头部
         out.println("HTTP/1.0 " + StatusCodeEnum.NOT_FOUND_404);
@@ -246,12 +254,15 @@ public class HttpWorker implements Runnable {
             outputStream.write(readBytesFromFile(file));
             outputStream.flush();
         }
+
+        doLogging(HttpMethodEnum.GET,file,StatusCodeEnum.OK);
     }
 
     /**
      * 处理错误请求
+     * @param requestedFile
      */
-    private void handleBadRequest() {
+    private void handleBadRequest(File requestedFile) {
         File file = new File(DefaultFilePathEnums.BAD_REQUEST_PAGE.getFilePath());
         // 先设置HTTP头部
         out.println("HTTP/1.0" + StatusCodeEnum.BAD_REQUEST);
@@ -262,6 +273,8 @@ public class HttpWorker implements Runnable {
         //在头部与主体内容之间流出空行
         out.println();
         out.flush();
+
+        doLogging(HttpMethodEnum.GET,requestedFile,StatusCodeEnum.BAD_REQUEST);
     }
 
     /**
@@ -278,6 +291,7 @@ public class HttpWorker implements Runnable {
         //在头部与主体内容之间流出空行
         out.println();
         out.flush();
+
     }
 
     /**
@@ -314,6 +328,15 @@ public class HttpWorker implements Runnable {
         }
 
         return bFile;
+    }
+
+    /**
+     * 记录操作日志
+     * 分别对访问者的ip地址，请求方法，文件名称，文件长度，录状态码进行记录
+     */
+    private void doLogging(HttpMethodEnum methodEnum, File file, StatusCodeEnum statusCodeEnum) {
+        InetAddress localIp = socket.getLocalAddress();
+        LOGGER.info("{} {} {} {} {}",localIp,methodEnum.getMethodName(),file.getName(),file.length(),statusCodeEnum.getCode());
     }
 
 }
