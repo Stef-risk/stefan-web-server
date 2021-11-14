@@ -66,9 +66,11 @@ public class HttpWorker implements Runnable {
             String[] parsedUrl = parseUrl(requests);
             //根据解析的url来获取方法
             String method = parsedUrl[0];
-
+            //分别对解析到的GET，HEAD，POST请求进行处理
             if (method.toUpperCase(Locale.ROOT).equals(HttpMethodEnum.GET.getMethodName())) {
                 processGetMethod(parsedUrl);
+            } else if (method.toUpperCase(Locale.ROOT).equals(HttpMethodEnum.HEAD.getMethodName())) {
+                processHeadMethod(parsedUrl);
             }
 
         } catch (IOException e) {
@@ -105,27 +107,52 @@ public class HttpWorker implements Runnable {
             String fileName = parsedUrl[1].trim().substring(1);
             //文件名称为空则直接返回默认页面
             if (StringUtils.isEmpty(fileName)) {
-                displayDefaultPage();
+                displayDefaultPage(false);
             }
             //显示特定的页面
-            File requestedFile = new File(DefaultFilePathEnums.FILE_PATH_PREFIX.getFilePath()+fileName);
+            File requestedFile = new File(DefaultFilePathEnums.FILE_PATH_PREFIX.getFilePath() + fileName);
             //如果文件存在则显示，否则显示默认页面
-            if(requestedFile.exists()) {
-                displaySpecificPage(requestedFile);
-            }
-            else {
-                display404Page();
+            if (requestedFile.exists()) {
+                displaySpecificPage(requestedFile, false);
+            } else {
+                display404Page(false);
             }
         } catch (Exception e) {
             //返回未找到页面
-            display404Page();
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 处理HEAD请求
+     *
+     * @param parsedUrl
+     */
+    private void processHeadMethod(String[] parsedUrl) {
+        //获取文件名称
+        try {
+            String fileName = parsedUrl[1].trim().substring(1);
+            if (StringUtils.isBlank(fileName)) {
+                displayDefaultPage(true);
+            }
+
+            File requestedFile = new File(DefaultFilePathEnums.FILE_PATH_PREFIX.getFilePath() + fileName);
+            //如果文件存在则显示，否则显示默认页面
+            if (requestedFile.exists()) {
+                displaySpecificPage(requestedFile, true);
+            } else {
+                display404Page(true);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     /**
      * 返回默认的页面
+     * @param forHead 表明是否为HEAD请求
      */
-    private void displayDefaultPage() throws IOException {
+    private void displayDefaultPage(boolean forHead) throws IOException {
         File file = new File(DefaultFilePathEnums.DEFAULT_FILE.getFilePath());
         // 先设置HTTP头部
         out.println("HTTP/1.0 200 OK");
@@ -137,15 +164,18 @@ public class HttpWorker implements Runnable {
         out.println();
         out.flush();
 
-        //将主体内容写入
-        outputStream.write(readBytesFromFile(file));
-        outputStream.flush();
+        //如果为get请求将主体内容写入
+        if(!forHead) {
+            outputStream.write(readBytesFromFile(file));
+            outputStream.flush();
+        }
     }
 
     /**
      * 返回404页面
+     * @param forHead
      */
-    private void display404Page()  {
+    private void display404Page(boolean forHead) throws IOException {
         File file = new File(DefaultFilePathEnums.FILE_NOT_FOUND.getFilePath());
         // 先设置HTTP头部
         out.println("HTTP/1.0 404 File Not Found");
@@ -158,22 +188,21 @@ public class HttpWorker implements Runnable {
         out.flush();
 
         //将主体内容写入
-        try {
+        if(!forHead) {
             outputStream.write(readBytesFromFile(file));
-            outputStream.write(Integer.parseInt("10000000"));
             outputStream.flush();
-        } catch (IOException e) {
-            System.out.println();
-            e.printStackTrace();
         }
+
+
     }
 
     /**
      * 对特定页面进行显示
      *
      * @param file
+     * @param forHead
      */
-    private void displaySpecificPage(File file) throws IOException {
+    private void displaySpecificPage(File file,boolean forHead) throws IOException {
         // 先设置HTTP头部
         out.println("HTTP/1.0 200 OK");
         out.println("Server: Stefan HTTP Server : 1.0");
@@ -185,9 +214,12 @@ public class HttpWorker implements Runnable {
         out.flush();
 
         //将主体内容写入
-        outputStream.write(readBytesFromFile(file));
-        outputStream.flush();
+        if(!forHead) {
+            outputStream.write(readBytesFromFile(file));
+            outputStream.flush();
+        }
     }
+
 
     /**
      * 获取文件类型
