@@ -115,7 +115,7 @@ public class HttpWorker implements Runnable {
             //显示特定的页面
             File requestedFile;
             //处理文件名后缀
-            if (fileName.endsWith(DefaultFilePathEnums.FILE_PATH_SUFFIX.getFilePath())) {
+            if (fileName.endsWith(".*")) {
                 requestedFile = new File(DefaultFilePathEnums.FILE_PATH_PREFIX.getFilePath() + fileName);
             } else {
                 requestedFile = new File(DefaultFilePathEnums.FILE_PATH_PREFIX.getFilePath() + fileName + DefaultFilePathEnums.FILE_PATH_SUFFIX.getFilePath());
@@ -146,7 +146,12 @@ public class HttpWorker implements Runnable {
                 displayDefaultPage(true);
             }
 
-            File requestedFile = new File(DefaultFilePathEnums.FILE_PATH_PREFIX.getFilePath() + fileName);
+            File requestedFile;
+            if (fileName.endsWith(".*")) {
+                requestedFile = new File(DefaultFilePathEnums.FILE_PATH_PREFIX.getFilePath() + fileName);
+            } else {
+                requestedFile = new File(DefaultFilePathEnums.FILE_PATH_PREFIX.getFilePath() + fileName + DefaultFilePathEnums.FILE_PATH_SUFFIX.getFilePath());
+            }
             //如果文件存在则显示，否则显示默认页面
             if (requestedFile.exists()) {
                 displaySpecificPage(requestedFile, true);
