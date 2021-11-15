@@ -9,25 +9,9 @@ package webroot.enums;
 public enum DefaultFilePathEnums {
 
     /**
-     * 如果在get中没有解析到文件名的默认页面
+     * 本地环境下的根路径
      */
-    DEFAULT_FILE("default file to display","C:\\Users\\Stefrisk\\Desktop\\Git Repositories\\stefan-web-server\\src\\main\\resources\\webroot\\index.html"),
-
-    /**
-     * 未找到相应文件时展示的页面
-     */
-    FILE_NOT_FOUND_PAGE("404 Page","C:\\Users\\Stefrisk\\Desktop\\Git Repositories\\stefan-web-server\\src\\main\\resources\\webroot\\404.html"),
-
-    /**
-     * 400错误请求页面
-     */
-    BAD_REQUEST_PAGE("400 Page","C:\\Users\\Stefrisk\\Desktop\\Git Repositories\\stefan-web-server\\src\\main\\resources\\webroot\\400.html"),
-
-    /**
-     * 403禁止执行页面
-     */
-    FORBIDDEN_PAGE("403 Page",""),
-
+    LOCAL_FILE_PATH("local path",""),
     /**
      * 文件名前缀
      */
@@ -37,6 +21,28 @@ public enum DefaultFilePathEnums {
      * 文件名后缀
      */
     FILE_PATH_SUFFIX("suffix of the file name",".html"),
+
+    /**
+     * 如果在get中没有解析到文件名的默认页面
+     */
+    DEFAULT_FILE("default file to display",FILE_PATH_PREFIX.getFilePath()+"\\index.html"),
+
+    /**
+     * 未找到相应文件时展示的页面
+     */
+    FILE_NOT_FOUND_PAGE("404 Page",FILE_PATH_PREFIX.getFilePath()+"\\404.html"),
+
+    /**
+     * 400错误请求页面
+     */
+    BAD_REQUEST_PAGE("400 Page",FILE_PATH_PREFIX.getFilePath()+ "\\400.html"),
+
+    /**
+     * 403禁止执行页面
+     */
+    FORBIDDEN_PAGE("403 Page",FILE_PATH_PREFIX.getFilePath()+"\\403.html"),
+
+
     ;
 
     /**

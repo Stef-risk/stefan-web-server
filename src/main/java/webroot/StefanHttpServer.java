@@ -46,7 +46,7 @@ public class StefanHttpServer {
      */
     public StefanHttpServer() {
         //初始化线程池,设置淘汰策略为弃老策略
-        threadPoolExecutor = new ThreadPoolExecutor(10, 20, 3000, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(128));
+        threadPoolExecutor = new ThreadPoolExecutor(10, 20, 3000, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(20));
         threadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
         initServerSocket();
     }
