@@ -9,8 +9,10 @@ import webroot.enums.HttpMethodEnum;
 import webroot.enums.StatusCodeEnum;
 
 import java.io.*;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
@@ -162,7 +164,7 @@ public class HttpWorker implements Runnable {
             if (requestedFile.exists()) {
                 displaySpecificPage(requestedFile, true);
             } else {
-                display404Page(true,requestedFile);
+                display404Page(true, requestedFile);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -171,13 +173,32 @@ public class HttpWorker implements Runnable {
     }
 
     /**
-     * 处理POST请求
+     * 处理POST请求, 当前只支持 对cgi的单独请求
      *
      * @param parsedUrl
      */
     private void processPostMethod(String[] parsedUrl) throws IOException {
-        Runtime.getRuntime().exec("C:\\Strawberry\\perl\\bin\\perl.exe C:\\Users\\Stefrisk\\Desktop\\Git Repositories\\stefan-web-server\\src\\main\\resources\\webroot\\cgi-bin\\calculator.pl");
-        System.out.println("After executing");
+        try {
+            String fileName = parsedUrl[1].trim().substring(1);
+            if (StringUtils.isBlank(fileName)) {
+                displayDefaultPage(true);
+            }
+
+            if (fileName.contains("cgi-bin")) {
+                if (fileName.contains("calculator")) {
+
+                } else if (fileName.contains("query")) {
+
+                }
+            }
+            //如果文件存在则显示，否则显示默认页面
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void processCalculator() throws IOException {
+        Runtime.getRuntime().exec("perl D:\\project\\stefan-web-server\\src\\main\\resources\\webroot\\cgi-bin\\calculator.pl");
     }
 
     /**
@@ -203,7 +224,7 @@ public class HttpWorker implements Runnable {
             outputStream.flush();
         }
 
-        doLogging(HttpMethodEnum.GET,file,StatusCodeEnum.OK);
+        doLogging(HttpMethodEnum.GET, file, StatusCodeEnum.OK);
     }
 
     /**
@@ -255,11 +276,12 @@ public class HttpWorker implements Runnable {
             outputStream.flush();
         }
 
-        doLogging(HttpMethodEnum.GET,file,StatusCodeEnum.OK);
+        doLogging(HttpMethodEnum.GET, file, StatusCodeEnum.OK);
     }
 
     /**
      * 处理错误请求
+     *
      * @param requestedFile
      */
     private void handleBadRequest(File requestedFile) {
@@ -274,7 +296,7 @@ public class HttpWorker implements Runnable {
         out.println();
         out.flush();
 
-        doLogging(HttpMethodEnum.GET,requestedFile,StatusCodeEnum.BAD_REQUEST);
+        doLogging(HttpMethodEnum.GET, requestedFile, StatusCodeEnum.BAD_REQUEST);
     }
 
     /**
@@ -336,7 +358,13 @@ public class HttpWorker implements Runnable {
      */
     private void doLogging(HttpMethodEnum methodEnum, File file, StatusCodeEnum statusCodeEnum) {
         InetAddress localIp = socket.getLocalAddress();
-        LOGGER.info("{} {} {} {} {}",localIp,methodEnum.getMethodName(),file.getName(),file.length(),statusCodeEnum.getCode());
+        try {
+            LOGGER.info("localIp: {} , method: {},fileName: {},fileSize: {},statusCode: {}",
+                    Inet4Address.getLocalHost().getHostAddress(), methodEnum.getMethodName(), file.getName(), file.length(), statusCodeEnum.getCode());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
