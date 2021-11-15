@@ -15,7 +15,7 @@ public enum DefaultFilePathEnums {
     /**
      * 文件名前缀
      */
-    FILE_PATH_PREFIX("prefix of the file name","C:\\Users\\Stefrisk\\Desktop\\Git Repositories\\stefan-web-server\\src\\main\\resources\\webroot\\"),
+    FILE_PATH_PREFIX("prefix of the file name","D:\\project\\stefan-web-server\\src\\main\\resources\\webroot\\"),
 
     /**
      * 文件名后缀
@@ -25,23 +25,22 @@ public enum DefaultFilePathEnums {
     /**
      * 如果在get中没有解析到文件名的默认页面
      */
-    DEFAULT_FILE("default file to display",FILE_PATH_PREFIX.getFilePath()+"\\index.html"),
+    DEFAULT_FILE("default file to display",FILE_PATH_PREFIX.getFilePath()+"index.html"),
 
     /**
      * 未找到相应文件时展示的页面
      */
-    FILE_NOT_FOUND_PAGE("404 Page",FILE_PATH_PREFIX.getFilePath()+"\\404.html"),
+    FILE_NOT_FOUND_PAGE("404 Page",FILE_PATH_PREFIX.getFilePath()+"404.html"),
 
     /**
      * 400错误请求页面
      */
-    BAD_REQUEST_PAGE("400 Page",FILE_PATH_PREFIX.getFilePath()+ "\\400.html"),
+    BAD_REQUEST_PAGE("400 Page",FILE_PATH_PREFIX.getFilePath()+ "400.html"),
 
     /**
      * 403禁止执行页面
      */
-    FORBIDDEN_PAGE("403 Page",FILE_PATH_PREFIX.getFilePath()+"\\403.html"),
-
+    FORBIDDEN_PAGE("403 Page",FILE_PATH_PREFIX.getFilePath()+"403.html"),
 
     ;
 
